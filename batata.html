@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Sistema de Labs - IFPE</title>
+<link rel="stylesheet" href="batata.css">
+</head>
+
+<body>
+
+<h1>Sistema de Labs - IFPE</h1>
+
+<input id="nomeUsuario" placeholder="Digite seu nome">
+<button onclick="cadastrar()">Cadastrar</button>
+
+<hr>
+
+<div id="salas" class="container"></div>
+
+<script>
+let usuarioAtual = "";
+
+async function cadastrar() {
+    const nome = document.getElementById("nomeUsuario").value;
+    if (!nome) return;
+
+    await fetch("http://localhost:3000/cadastrar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nome })
+    });
+
+    usuarioAtual = nome;
+    alert("Usuário cadastrado!");
+}
+
+async function carregarSalas() {
+    const res = await fetch('http://localhost:3000/salas');
+    const registros = await res.json();
+
+    const container = document.getElementById("salas");
+    container.innerHTML = "";
+
+    registros.forEach((sala) => {
+        const card = document.createElement("div");
+        card.classList.add("card");
+
+        let status = sala.usuario === "" ? "Disponível" : "Ocupada";
+
+        card.innerHTML = `
+            <h2>${sala.nome}</h2>
+            <p><strong>Status:</strong> ${status}</p>
+            <p><strong>Usuário:</strong> ${sala.usuario || "-"}</p>
+            <p><strong>Até:</strong> ${sala.horario || "-"}</p>
+
+            <button onclick="reservar(${sala.id})">Reservar</button>
+            <button onclick="liberar(${sala.id})">Desalugar</button>
+        `;
+
+        container.appendChild(card);
+    });
+}
+
+async function reservar(id) {
+    if (!usuarioAtual) {
+        alert("Cadastre seu nome primeiro!");
+        return;
+    }
+
+    let horario = prompt("Até que horas?");
+    if (!horario) return;
+
+    await fetch('http://localhost:3000/reservar', {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            id,
+            usuario: usuarioAtual,
+            horario
+        })
+    });
+
+    carregarSalas();
+}
+
+async function liberar(id) {
+    await fetch('http://localhost:3000/liberar', {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id })
+    });
+
+    carregarSalas();
+}
+
+carregarSalas();
+</script>
+
+</body>
+</html>
