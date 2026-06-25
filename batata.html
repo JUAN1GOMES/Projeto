@@ -2,16 +2,19 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sistema de Labs - IFPE</title>
-<link rel="stylesheet" href="batata.css">
+<link rel="stylesheet" href="batata.css">   
 </head>
 
 <body>
 
 <h1>Sistema de Labs - IFPE</h1>
 
-<input id="nomeUsuario" placeholder="Digite seu nome">
-<button onclick="cadastrar()">Cadastrar</button>
+<div class="cadastro">
+    <input id="nomeUsuario" placeholder="Digite seu nome">
+    <button onclick="cadastrar()">Cadastrar</button>
+</div>
 
 <hr>
 
@@ -20,28 +23,27 @@
 <script>
 let usuarioAtual = "";
 
-async function cadastrar() {
+function cadastrar() {
     const nome = document.getElementById("nomeUsuario").value;
-    if (!nome) return;
 
-    await fetch("http://localhost:3000/cadastrar", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nome })
-    });
+    if (!nome) {
+        alert("Digite um nome");
+        return;
+    }
 
     usuarioAtual = nome;
-    alert("Usuário cadastrado!");
+    alert("Nome registrado!");
 }
 
 async function carregarSalas() {
-    const res = await fetch('http://localhost:3000/salas');
+    const res = await fetch("http://localhost:3000/salas");
     const registros = await res.json();
 
     const container = document.getElementById("salas");
     container.innerHTML = "";
 
     registros.forEach((sala) => {
+
         const card = document.createElement("div");
         card.classList.add("card");
 
@@ -51,7 +53,11 @@ async function carregarSalas() {
             <h2>${sala.nome}</h2>
             <p><strong>Status:</strong> ${status}</p>
             <p><strong>Usuário:</strong> ${sala.usuario || "-"}</p>
-            <p><strong>Até:</strong> ${sala.horario || "-"}</p>
+            <p><strong>Até:</strong> ${
+                sala.horario_fim
+                ? new Date(sala.horario_fim).toLocaleString()
+                : "-"
+            }</p>
 
             <button onclick="reservar(${sala.id})">Reservar</button>
             <button onclick="liberar(${sala.id})">Desalugar</button>
@@ -62,21 +68,29 @@ async function carregarSalas() {
 }
 
 async function reservar(id) {
+
     if (!usuarioAtual) {
-        alert("Cadastre seu nome primeiro!");
+        alert("Cadastre o nome primeiro");
         return;
     }
 
-    let horario = prompt("Até que horas?");
-    if (!horario) return;
+    const horas = prompt("Quantas horas a sala será utilizada?(ex: 1, 2, 3, 5)");
 
-    await fetch('http://localhost:3000/reservar', {
+    if (!horas) return;
+
+    const horarioFim = new Date(
+        Date.now() + Number(horas) * 60 * 60 * 1000
+    ).toISOString();
+
+    await fetch("http://localhost:3000/reservar", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+            "Content-Type": "application/json"
+        },
         body: JSON.stringify({
             id,
             usuario: usuarioAtual,
-            horario
+            horario_fim: horarioFim
         })
     });
 
@@ -84,9 +98,12 @@ async function reservar(id) {
 }
 
 async function liberar(id) {
-    await fetch('http://localhost:3000/liberar', {
+
+    await fetch("http://localhost:3000/liberar", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+            "Content-Type": "application/json"
+        },
         body: JSON.stringify({ id })
     });
 
@@ -94,7 +111,8 @@ async function liberar(id) {
 }
 
 carregarSalas();
-</script>
 
+setInterval(carregarSalas, 30000);
+</script>
 </body>
 </html>

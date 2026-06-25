@@ -16,31 +16,23 @@ CREATE TABLE IF NOT EXISTS salas (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nome TEXT,
     usuario TEXT,
-    horario TEXT
-)
-`);
-
-db.run(`
-CREATE TABLE IF NOT EXISTS usuarios (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nome TEXT,
-    gmail TEXT
+    horario_fim TEXT
 )
 `);
 
 const salasPadrao = [
-"Sala 1","Sala 2","Sala 3","Sala 4","Sala 5","Sala 6","Sala 7","Sala 8",
-"Sala 9","Sala 10","Sala 11","Sala 12","Sala 13","Sala 14","Sala 15","Sala 16",
-"Lab 1","Lab 2","Lab 3","Lab 4","Lab 5","Lab 6","Lab 7","Lab 8"
+    "Sala 1","Sala 2","Sala 3","Sala 4","Sala 5","Sala 6","Sala 7","Sala 8",
+    "Sala 9","Sala 10","Sala 11","Sala 12","Sala 13","Sala 14","Sala 15","Sala 16",
+    "Lab 1","Lab 2","Lab 3","Lab 4","Lab 5","Lab 6","Lab 7","Lab 8"
 ];
 
 db.serialize(() => {
     db.get("SELECT COUNT(*) as total FROM salas", (err, row) => {
         if (err) return;
 
-        if (row && row.total === 0) {
+        if (row.total === 0) {
             const stmt = db.prepare(
-                "INSERT INTO salas (nome, usuario, horario) VALUES (?, '', '')"
+                "INSERT INTO salas (nome, usuario, horario_fim) VALUES (?, '', '')"
             );
 
             salasPadrao.forEach(nome => stmt.run(nome));
@@ -53,27 +45,6 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
 });
 
-app.get('/batata.html', (req, res) => {
-    res.sendFile(__dirname + '/batata.html');
-});
-
-app.post('/cadastrar', (req, res) => {
-    const { nome, gmail } = req.body;
-
-    if (!nome || !gmail) {
-        return res.status(400).send("Dados inválidos");
-    }
-
-    db.run(
-        "INSERT INTO usuarios (nome, gmail) VALUES (?, ?)",
-        [nome, gmail],
-        (err) => {
-            if (err) return res.status(500).send(err.message);
-            res.redirect("/batata.html");
-        }
-    );
-});
-
 app.get('/salas', (req, res) => {
     db.all("SELECT * FROM salas", (err, rows) => {
         if (err) return res.status(500).send(err.message);
@@ -82,9 +53,9 @@ app.get('/salas', (req, res) => {
 });
 
 app.post('/reservar', (req, res) => {
-    const { id, usuario, horario } = req.body;
+    const { id, usuario, horario_fim } = req.body;
 
-    if (!id || !usuario || !horario) {
+    if (!id || !usuario || !horario_fim) {
         return res.status(400).send("Dados inválidos");
     }
 
@@ -99,12 +70,12 @@ app.post('/reservar', (req, res) => {
             }
 
             if (sala.usuario !== "") {
-                return res.status(400).send("Sala já ocupada");
+                return res.status(400).send("Sala ocupada");
             }
 
             db.run(
-                "UPDATE salas SET usuario = ?, horario = ? WHERE id = ?",
-                [usuario, horario, id],
+                "UPDATE salas SET usuario = ?, horario_fim = ? WHERE id = ?",
+                [usuario, horario_fim, id],
                 (err) => {
                     if (err) return res.status(500).send(err.message);
                     res.sendStatus(200);
@@ -117,10 +88,8 @@ app.post('/reservar', (req, res) => {
 app.post('/liberar', (req, res) => {
     const { id } = req.body;
 
-    if (!id) return res.status(400).send("ID inválido");
-
     db.run(
-        "UPDATE salas SET usuario = '', horario = '' WHERE id = ?",
+        "UPDATE salas SET usuario = '', horario_fim = '' WHERE id = ?",
         [id],
         (err) => {
             if (err) return res.status(500).send(err.message);
@@ -128,6 +97,21 @@ app.post('/liberar', (req, res) => {
         }
     );
 });
+
+setInterval(() => {
+    const agora = new Date().toISOString();
+
+    db.run(
+        `
+        UPDATE salas
+        SET usuario = '',
+            horario_fim = ''
+        WHERE horario_fim <> ''
+        AND horario_fim <= ?
+        `,
+        [agora]
+    );
+}, 60000);
 
 app.listen(3000, () => {
     console.log("Servidor rodando em http://localhost:3000");
