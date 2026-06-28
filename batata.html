@@ -1,118 +1,162 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sistema de Labs - IFPE</title>
-<link rel="stylesheet" href="batata.css">   
+<link rel="stylesheet" href="batata.css">
 </head>
 
 <body>
 
 <h1>Sistema de Labs - IFPE</h1>
 
-<div class="cadastro">
-    <input id="nomeUsuario" placeholder="Digite seu nome">
-    <button onclick="cadastrar()">Cadastrar</button>
-</div>
-
 <hr>
 
 <div id="salas" class="container"></div>
 
 <script>
-let usuarioAtual = "";
 
-function cadastrar() {
-    const nome = document.getElementById("nomeUsuario").value;
+const usuario = localStorage.getItem("usuario");
 
-    if (!nome) {
-        alert("Digite um nome");
-        return;
-    }
-
-    usuarioAtual = nome;
-    alert("Nome registrado!");
+if (!usuario) {
+    alert("Selecione um usuário antes de entrar nas salas.");
+    window.location.href = "/usuarios";
 }
 
 async function carregarSalas() {
-    const res = await fetch("http://localhost:3000/salas");
-    const registros = await res.json();
 
-    const container = document.getElementById("salas");
-    container.innerHTML = "";
+    try {
 
-    registros.forEach((sala) => {
+        const resposta = await fetch("/salas");
+        const salas = await resposta.json();
 
-        const card = document.createElement("div");
-        card.classList.add("card");
+        const container = document.getElementById("salas");
+        container.innerHTML = "";
 
-        let status = sala.usuario === "" ? "Disponível" : "Ocupada";
+        salas.forEach(sala => {
 
-        card.innerHTML = `
-            <h2>${sala.nome}</h2>
-            <p><strong>Status:</strong> ${status}</p>
-            <p><strong>Usuário:</strong> ${sala.usuario || "-"}</p>
-            <p><strong>Até:</strong> ${
-                sala.horario_fim
-                ? new Date(sala.horario_fim).toLocaleString()
-                : "-"
-            }</p>
+            const card = document.createElement("div");
+            card.className = "card";
 
-            <button onclick="reservar(${sala.id})">Reservar</button>
-            <button onclick="liberar(${sala.id})">Desalugar</button>
-        `;
+            const status = sala.usuario ? "Ocupada" : "Disponível";
 
-        container.appendChild(card);
-    });
+            card.innerHTML = `
+                <h2>${sala.nome}</h2>
+
+                <p><strong>Status:</strong> ${status}</p>
+
+                <p><strong>Usuário:</strong> ${sala.usuario || "-"}</p>
+
+                <p><strong>Até:</strong> ${sala.horario || "-"}</p>
+
+                ${
+                    sala.usuario
+                    ? `<button onclick="liberar(${sala.id})">Desocupar</button>`
+                    : `<button onclick="reservar(${sala.id})">Reservar</button>`
+                }
+
+            `;
+
+            container.appendChild(card);
+
+        });
+
+    } catch (erro) {
+
+        alert("Erro ao carregar salas");
+
+    }
+
 }
 
 async function reservar(id) {
 
-    if (!usuarioAtual) {
-        alert("Cadastre o nome primeiro");
-        return;
+    const horario = prompt("Até que horas vai utilizar a sala?");
+
+    if (!horario) return;
+
+    try {
+
+        const resposta = await fetch("/reservar", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+
+                id: id,
+                usuario: usuario,
+                horario: horario
+
+            })
+
+        });
+
+        if (!resposta.ok) {
+
+            alert(await resposta.text());
+            return;
+
+        }
+
+        carregarSalas();
+
+    } catch (erro) {
+
+        alert("Erro ao reservar sala");
+
     }
 
-    const horas = prompt("Quantas horas a sala será utilizada?(ex: 1, 2, 3, 5)");
-
-    if (!horas) return;
-
-    const horarioFim = new Date(
-        Date.now() + Number(horas) * 60 * 60 * 1000
-    ).toISOString();
-
-    await fetch("http://localhost:3000/reservar", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            id,
-            usuario: usuarioAtual,
-            horario_fim: horarioFim
-        })
-    });
-
-    carregarSalas();
 }
 
 async function liberar(id) {
 
-    await fetch("http://localhost:3000/liberar", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ id })
-    });
+    try {
 
-    carregarSalas();
+        const resposta = await fetch("/liberar", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+
+                id: id
+
+            })
+
+        });
+
+        if (!resposta.ok) {
+
+            alert(await resposta.text());
+            return;
+
+        }
+
+        carregarSalas();
+
+    } catch (erro) {
+
+        alert("Erro ao liberar sala");
+
+    }
+
 }
 
 carregarSalas();
 
-setInterval(carregarSalas, 30000);
+setInterval(carregarSalas,30000);
+
 </script>
+
 </body>
+
 </html>
