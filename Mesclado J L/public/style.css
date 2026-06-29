@@ -1,0 +1,151 @@
+/* tá aí o código Juan */
+
+body{
+    margin:0;
+    padding:0;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+    font-family:Arial, Helvetica, sans-serif;
+    background-color:rgb(33,37,41);
+}
+
+.container{
+    width:750px;
+    padding:35px;
+    border-radius:18px;
+
+    background:
+    linear-gradient(rgb(248,249,250), rgb(248,249,250)) padding-box,
+    linear-gradient(
+        90deg,
+        rgb(13,110,253),
+        rgb(25,135,84),
+        rgb(255,193,7),
+        rgb(220,53,69)
+    ) border-box;
+
+    border:4px solid transparent;
+
+    box-shadow:
+    0px 0px 15px rgb(13,110,253),
+    0px 0px 30px rgb(90,90,90);
+}
+
+h1{
+    text-align:center;
+    color:rgb(52,58,64);
+    margin-bottom:30px;
+    font-size:40px;
+}
+
+.topo{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:25px;
+}
+
+label{
+    color:rgb(52,58,64);
+    font-weight:bold;
+    font-size:17px;
+}
+
+input{
+    width:100%;
+    padding:12px;
+    margin-top:6px;
+    margin-bottom:20px;
+    box-sizing:border-box;
+    border-radius:8px;
+    border:2px solid rgb(206,212,218);
+    background-color:rgb(255,255,255);
+    color:rgb(33,37,41);
+    font-size:15px;
+    transition:.3s;
+}
+
+input:focus{
+    outline:none;
+    border-color:rgb(13,110,253);
+    box-shadow:0px 0px 10px rgb(13,110,253);
+}
+
+button{
+    padding:12px 20px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    background-color:rgb(13,110,253);
+    color:rgb(255,255,255);
+    font-size:15px;
+    transition:.3s;
+}
+
+button:hover{
+    transform:scale(1.05);
+    background-color:rgb(25,135,84);
+}
+
+a{
+    text-decoration:none;
+    color:rgb(255,255,255);
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
+    overflow:hidden;
+    border-radius:10px;
+}
+
+th{
+    background-color:rgb(13,110,253);
+    color:rgb(255,255,255);
+    padding:15px;
+    font-size:17px;
+}
+
+td{
+    padding:14px;
+    text-align:center;
+    color:rgb(52,58,64);
+    border-bottom:1px solid rgb(222,226,230);
+}
+
+tr:nth-child(even){
+    background-color:rgb(245,245,245);
+}
+
+tr:hover{
+    background-color:rgb(225,240,255);
+}
+
+.editar{
+    background-color:rgb(255,193,7);
+    color:rgb(33,37,41);
+    margin-right:8px;
+}
+
+.editar:hover{
+    background-color:rgb(255,170,0);
+}
+
+.excluir{
+    background-color:rgb(220,53,69);
+}
+
+.excluir:hover{
+    background-color:rgb(180,35,50);
+}
+
+.novo{
+    background-color:rgb(13,110,253);
+}
+
+.novo:hover{
+    background-color:rgb(25,135,84);
+}

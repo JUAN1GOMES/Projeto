@@ -1,0 +1,40 @@
+<h1>Cadastro de Horário</h1>
+
+<form id="form">
+
+    <p>Finalidade</p>
+    <input type="text" id="objetivo" required>
+
+    <p>Início</p>
+    <input type="time" id="inicio" required>
+
+    <p>Fim</p>
+    <input type="time" id="fim" required>
+
+    <p>Observações</p>
+    <textarea id="observacao"></textarea>
+
+    <br><br>
+
+    <button type="submit">Salvar Horário</button>
+
+</form>
+
+<script>
+document.getElementById("form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const objetivo = document.getElementById("objetivo").value;
+    const inicio = document.getElementById("inicio").value;
+    const fim = document.getElementById("fim").value;
+    const observacao = document.getElementById("observacao").value;
+
+    await fetch("/sessao/horario", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ inicio, fim })
+    });
+
+    window.location.href = "/batata.html";
+});
+</script>

@@ -1,0 +1,63 @@
+<div class="container">
+
+<div class="topo">
+
+<h1>Usuários</h1>
+
+</div>
+
+<table>
+
+<tr>
+
+<th>Nome</th>
+<th>Email</th>
+<th>Idade</th>
+<th>Ações</th>
+
+</tr>
+
+{{#each usuarios}}
+
+<tr>
+
+<td>{{nome}}</td>
+<td>{{email}}</td>
+<td>{{idade}}</td>
+
+<td>
+
+<a href="/usuarios/editar/{{id}}">
+<button class="editar">Editar</button>
+</a>
+
+<form action="/usuarios/remover/{{id}}" method="POST" style="display:inline;">
+<button class="excluir">Excluir</button>
+</form>
+
+<button onclick="entrarSala('{{id}}','{{nome}}')">
+Ir para Salas
+</button>
+
+</td>
+
+</tr>
+
+{{/each}}
+
+</table>
+
+</div>
+
+<script>
+
+function entrarSala(id,nome){
+
+localStorage.setItem("usuarioId",id);
+localStorage.setItem("usuario",nome);
+
+window.location.href="/batata.html";
+
+}
+
+</script>
