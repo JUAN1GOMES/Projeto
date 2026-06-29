@@ -88,13 +88,24 @@ app.get("/usuarios", async (req, res) => {
 
 app.get("/usuarios/editar/:id", async (req, res) => {
   const usuario = await Usuario.findByPk(req.params.id, { raw: true });
-  if (!usuario) return res.status(404).send("Usuário não encontrado");
+
+  if (!usuario) {
+    return res.status(404).send("Usuário não encontrado");
+  }
+
+  req.session.usuario = usuario.nome;
+
   res.render("editarUsuario", { usuario });
 });
-
 app.post("/usuarios/editar", async (req, res) => {
   const { id, nome, email, idade } = req.body;
-  await Usuario.update({ nome, email, idade }, { where: { id } });
+
+  await Usuario.update(
+    { nome, email, idade },
+    { where: { id } }
+  );
+  req.session.usuario = nome;
+
   res.redirect("/usuarios");
 });
 
