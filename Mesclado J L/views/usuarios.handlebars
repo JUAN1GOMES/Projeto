@@ -1,20 +1,21 @@
 <div class="container">
 
 <div class="topo">
-
 <h1>Usuários</h1>
+
+<button type="button" onclick="window.location.href='/'">
+    Cadastrar Novo Usuário
+</button>
 
 </div>
 
 <table>
 
 <tr>
-
 <th>Nome</th>
 <th>Email</th>
 <th>Idade</th>
 <th>Ações</th>
-
 </tr>
 
 {{#each usuarios}}
@@ -50,14 +51,10 @@ Ir para Salas
 </div>
 
 <script>
+function entrarSala(id, nome) {
+    localStorage.setItem("usuarioId", id);
+    localStorage.setItem("usuario", nome);
 
-function entrarSala(id,nome){
-
-localStorage.setItem("usuarioId",id);
-localStorage.setItem("usuario",nome);
-
-window.location.href="/batata.html";
-
+    window.location.href = "/batata";
 }
-
 </script>
