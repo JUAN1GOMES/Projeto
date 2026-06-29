@@ -1,0 +1,22 @@
+<div class="container">
+
+<h1>Editar Usuário</h1>
+
+<form action="/usuarios/editar" method="POST">
+
+<input type="hidden" name="id" value="{{usuario.id}}">
+
+<label>Nome</label>
+<input type="text" name="nome" value="{{usuario.nome}}" required>
+
+<label>Email</label>
+<input type="email" name="email" value="{{usuario.email}}" required>
+
+<label>Idade</label>
+<input type="number" name="idade" value="{{usuario.idade}}" required>
+
+<button>Salvar</button>
+
+</form>
+
+</div>

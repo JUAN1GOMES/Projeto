@@ -1,0 +1,30 @@
+<h1>Escolher Horário</h1>
+
+<form id="form">
+
+  <input id="inicio" placeholder="Início (08:00)" required>
+  <br><br>
+
+  <input id="fim" placeholder="Fim (10:00)" required>
+  <br><br>
+
+  <button type="submit">Continuar</button>
+
+</form>
+
+<script>
+document.getElementById("form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const inicio = document.getElementById("inicio").value;
+  const fim = document.getElementById("fim").value;
+
+  await fetch("/sessao/horario", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ inicio, fim })
+  });
+
+  window.location.href = "/batata.html";
+});
+</script>
