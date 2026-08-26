@@ -163,7 +163,7 @@ app.post("/reservar", (req, res) => {
 
         db.run(
           `INSERT INTO horarios(usuario,sala,entrada,saida,duracao,objetivo,observacao)
-           VALUES(?,?,?,?,?,?,?)`,
+           VALUES(?,?,?, ?,?,?,?)`,
           [usuario, sala.nome, inicio, fim, 0, "Reserva", ""]
         );
 
