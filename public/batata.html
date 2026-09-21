@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+<title>Sistema de Reserva de Salas - IFPE</title>
+
+<link rel="stylesheet" href="batata.css">
+
+
+</head>
+
+<body>
+
+
+<header>
+    <h1>Sistema de Reserva de Salas</h1>
+</header>
+
+<main>
+
+    <section aria-labelledby="titulo-salas">
+
+        <h2 id="titulo-salas">Salas disponíveis</h2>
+
+        <div
+            id="salas"
+            class="container"
+            aria-live="polite"
+            aria-busy="false">
+        </div>
+
+    </section>
+
+    <nav aria-label="Gerenciamento">
+
+        <button type="button" onclick="irEditarUsuario()">
+            Gerenciar usuários
+        </button>
+
+        <button type="button" onclick="window.location.href='/horario'">
+            Alterar horário
+        </button>
+
+    </nav>
+
+    <p id="mensagem" class="mensagem" role="status" aria-live="polite"></p>
+
+</main>
+
+<script>
+
+    function irEditarUsuario() {
+        window.location.href = "/usuarios";
+    }
+
+    let usuario = "";
+    let inicio = "";
+    let fim = "";
+
+    async function carregarSessao() {
+
+        try {
+
+            const resposta = await fetch("/sessao");
+
+            if (!resposta.ok) {
+                location.href = "/usuarios";
+                return;
+            }
+
+            const dados = await resposta.json();
+
+            usuario = dados.usuario;
+            inicio = dados.inicio;
+            fim = dados.fim;
+
+        } catch {
+
+            location.href = "/usuarios";
+
+        }
+    }
+
+
+    function mostrarMensagem(texto) {
+        const mensagem = document.getElementById("mensagem");
+        mensagem.textContent = texto;
+    }
+
+
+    async function carregarSalas() {
+
+        const container = document.getElementById("salas");
+
+        container.setAttribute("aria-busy", "true");
+
+        try {
+
+            const resposta = await fetch("/salas");
+
+            if (!resposta.ok) {
+                throw new Error("Erro ao carregar salas");
+            }
+
+            const salas = await resposta.json();
+
+            container.innerHTML = "";
+
+            salas.forEach(sala => {
+
+                const card = document.createElement("article");
+
+                card.className = "card";
+
+                const status = sala.usuario
+                    ? "Ocupada"
+                    : "Disponível";
+
+                card.innerHTML = `
+
+                    <h3>${sala.nome}</h3>
+
+                    <p>
+                        <strong>Status:</strong>
+                        ${status}
+                    </p>
+
+                    <p>
+                        <strong>Usuário:</strong>
+                        ${sala.usuario || "Nenhum usuário"}
+                    </p>
+
+                    <p>
+                        <strong>Até:</strong>
+                        ${sala.horario || "Nenhum horário definido"}
+                    </p>
+
+                `;
+
+                const botao = document.createElement("button");
+
+                botao.type = "button";
+
+                if (sala.usuario) {
+
+                    botao.textContent = "Liberar sala";
+
+                    botao.addEventListener("click", () => {
+                        liberar(sala.id);
+                    });
+
+                } else {
+
+                    botao.textContent = "Reservar sala";
+
+                    botao.addEventListener("click", () => {
+                        reservar(sala.id, sala.nome);
+                    });
+
+                }
+
+                card.appendChild(botao);
+
+                container.appendChild(card);
+
+            });
+
+            mostrarMensagem("Lista de salas atualizada.");
+
+        } catch {
+
+            mostrarMensagem("Não foi possível carregar as salas.");
+
+        } finally {
+
+            container.setAttribute("aria-busy", "false");
+
+        }
+    }
+
+
+    async function reservar(id, nome) {
+
+        try {
+
+            const resposta = await fetch("/reservar", {
+
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    id,
+                    usuario,
+                    inicio,
+                    fim
+                })
+
+            });
+
+            if (!resposta.ok) {
+
+                mostrarMensagem(await resposta.text());
+
+                return;
+            }
+
+            await fetch("/horarios", {
+
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    usuario,
+                    sala: nome,
+                    inicio,
+                    fim,
+                    objetivo: "Reserva de sala",
+                    observacao: ""
+                })
+
+            });
+
+            mostrarMensagem(`A sala ${nome} foi reservada.`);
+
+            carregarSalas();
+
+        } catch {
+
+            mostrarMensagem("Erro ao reservar sala.");
+
+        }
+    }
+
+
+    async function liberar(id) {
+
+        try {
+
+            const resposta = await fetch("/liberar", {
+
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({ id })
+
+            });
+
+            if (!resposta.ok) {
+
+                mostrarMensagem(await resposta.text());
+
+                return;
+            }
+
+            mostrarMensagem("Sala liberada com sucesso.");
+
+            carregarSalas();
+
+        } catch {
+
+            mostrarMensagem("Erro ao liberar sala.");
+
+        }
+    }
+
+
+    (async () => {
+
+        await carregarSessao();
+
+        await carregarSalas();
+
+        setInterval(carregarSalas, 30000);
+
+    })();
+
+</script>
+
+</body>
+
+</html>
