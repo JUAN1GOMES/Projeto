@@ -1,0 +1,113 @@
+body {
+font-family: Arial, sans-serif;
+background: #eef4fb;
+color: #111111;
+margin: 0;
+padding: 20px;
+}
+
+h1 {
+text-align: center;
+margin-bottom: 20px;
+color: #111111;
+font-size: 32px;
+}
+
+.container {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+gap: 15px;
+padding: 10px;
+}
+
+.card {
+background: #ffffff;
+border: 2px solid #333333;
+border-radius: 12px;
+padding: 15px;
+box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.card:hover {
+border-color: #003f8f;
+}
+
+.card h2 {
+margin: 0 0 10px 0;
+font-size: 20px;
+color: #111111;
+}
+
+.card p {
+margin: 5px 0;
+font-size: 16px;
+color: #222222;
+line-height: 1.5;
+}
+
+.card button {
+margin-top: 10px;
+width: 100%;
+min-height: 44px;
+padding: 10px 14px;
+border: 2px solid #000000;
+border-radius: 8px;
+cursor: pointer;
+font-weight: bold;
+font-size: 16px;
+}
+
+.card button:first-of-type {
+background: #006400;
+color: #ffffff;
+}
+
+.card button:first-of-type:hover {
+background: #004b00;
+color: #ffffff;
+}
+
+.card button:last-of-type {
+background: #005fcc;
+color: #ffffff;
+}
+
+.card button:last-of-type:hover {
+background: #003f8f;
+color: #ffffff;
+}
+
+button:focus-visible {
+outline: 4px solid #000000;
+outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+*,
+*::before,
+*::after {
+animation: none !important;
+transition: none !important;
+}
+}
+
+@media (max-width: 600px) {
+body {
+padding: 12px;
+}
+
+
+.container {
+    grid-template-columns: 1fr;
+    padding: 5px;
+}
+
+.card {
+    padding: 18px;
+}
+
+.card button {
+    min-height: 44px;
+}
+
+}
