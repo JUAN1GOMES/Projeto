@@ -5,6 +5,7 @@ const session = require("express-session");
 
 const sequelize = require("./config/bd");
 const Usuario = require("./models/Usuario.model");
+const { where } = require("sequelize");
 
 const app = express();
 
@@ -97,6 +98,7 @@ app.get("/usuarios/editar/:id", async (req, res) => {
 
   res.render("editarUsuario", { usuario });
 });
+
 app.post("/usuarios/editar", async (req, res) => {
   const { id, nome, email, idade } = req.body;
 
@@ -148,28 +150,35 @@ app.post("/reservar", (req, res) => {
   const fim = req.session.fim;
 
   if (!usuario || !inicio || !fim) return res.redirect("/");
+  
+  db.get("SELECT * FROM salas WHERE usuario = ?", [usuario], (err, usuarioJaTemSala) => {
+    if (err) return res.status(500).send("Erro no banco de dados");
+    if (usuarioJaTemSala) {
+      return res.status(400).send("Você já possui uma sala reservada e não pode reservar outra.");
+    }
 
-  db.get("SELECT * FROM salas WHERE id=?", [id], (err, sala) => {
-    if (err || !sala) return res.status(500).send("Erro");
-    if (sala.usuario) return res.status(400).send("Sala ocupada");
+    db.get("SELECT * FROM salas WHERE id=?", [id], (err, sala) => {
+      if (err || !sala) return res.status(500).send("Erro");
+      if (sala.usuario) return res.status(400).send("Sala ocupada");
 
-    const horario = `${inicio} - ${fim}`;
+      const horario = `${inicio} - ${fim}`;
 
-    db.run(
-      "UPDATE salas SET usuario=?,horario=? WHERE id=?",
-      [usuario, horario, id],
-      (err2) => {
-        if (err2) return res.status(500).send(err2.message);
+      db.run(
+        "UPDATE salas SET usuario=?,horario=? WHERE id=?",
+        [usuario, horario, id],
+        (err2) => {
+          if (err2) return res.status(500).send(err2.message);
 
-        db.run(
-          `INSERT INTO horarios(usuario,sala,entrada,saida,duracao,objetivo,observacao)
-           VALUES(?,?,?, ?,?,?,?)`,
-          [usuario, sala.nome, inicio, fim, 0, "Reserva", ""]
-        );
+          db.run(
+            `INSERT INTO horarios(usuario,sala,entrada,saida,duracao,objetivo,observacao)
+             VALUES(?,?,?, ?,?,?,?)`,
+            [usuario, sala.nome, inicio, fim, 0, "Reserva", ""]
+          );
 
-        res.sendStatus(200);
-      }
-    );
+          res.sendStatus(200);
+        }
+      );
+    });
   });
 });
 
@@ -201,8 +210,4 @@ app.use((req, res) => {
 
 app.listen(3000, () => {
   console.log("Servidor rodando em http://localhost:3000");
-});
-
-app.get("/", (req, res) => {
-  res.render("cadastrarUsuario");
 });
